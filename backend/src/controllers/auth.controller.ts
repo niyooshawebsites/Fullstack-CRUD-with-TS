@@ -1,8 +1,12 @@
 import type { Request, Response } from "express";
+import type { RegisterBody } from "../schemas/auth.schema.js";
 import { User } from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 
-export const registerUser = async (req: Request, res: Response) => {
+export const registerUser = async (
+  req: Request<{}, {}, RegisterBody>,
+  res: Response,
+) => {
   try {
     const { name, email, password } = req.body;
     const userExists = await User.findOne({ email });
