@@ -8,8 +8,7 @@ import {
 import jwt from "jsonwebtoken";
 import { Session } from "../models/session.model.js";
 import { hashToken } from "../utils/tokenHash.js";
-import UAParser from "ua-parser-js";
-import { success } from "zod";
+import { UAParser } from "ua-parser-js";
 
 export const registerUser = async (
   req: Request<{}, {}, RegisterBody>,
@@ -67,6 +66,7 @@ export const loginUser = async (req: Request, res: Response) => {
     const hashedRefreshToken = hashToken(refreshToken);
 
     const parser = new UAParser(req.headers["user-agent"]);
+
     const device = parser.getDevice();
     const browser = parser.getBrowser();
     const os = parser.getOS();
@@ -76,9 +76,9 @@ export const loginUser = async (req: Request, res: Response) => {
       refreshTokenHash: hashedRefreshToken,
       ip: req.ip || "unknown",
       userAgent: req.headers["user-agent"] || "unknown",
-      device: device.model || "Desktop",
-      browser: browser.name,
-      os: os.name,
+      device: device.model || device.type || "Desktop",
+      browser: browser.name || "Unknown",
+      os: os.name || "Unknown",
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
@@ -180,9 +180,9 @@ export const refreshToken = async (req: Request, res: Response) => {
       refreshTokenHash: newRefreshTokenHash,
       ip: req.ip || "unknown",
       userAgent: req.headers["user-agent"] || "unknown",
-      device: device.model || "Desktop",
-      browser: browser.name,
-      os: os.name,
+      device: device.model || device.type || "Desktop",
+      browser: browser.name || "Unknown",
+      os: os.name || "Unknown",
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
