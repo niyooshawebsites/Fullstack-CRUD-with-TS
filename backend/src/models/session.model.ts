@@ -18,14 +18,18 @@ const sessionSchema = new mongoose.Schema(
     userAgent: {
       type: String,
     },
-
     ip: {
       type: String,
     },
-    device: String,
-    browser: String,
-    os: String,
-
+    device: {
+      type: String,
+    },
+    browser: {
+      type: String,
+    },
+    os: {
+      type: String,
+    },
     expiresAt: {
       type: Date,
       required: true,

@@ -9,6 +9,7 @@ import jwt from "jsonwebtoken";
 import { Session } from "../models/session.model.js";
 import { hashToken } from "../utils/tokenHash.js";
 import UAParser from "ua-parser-js";
+import { success } from "zod";
 
 export const registerUser = async (
   req: Request<{}, {}, RegisterBody>,
@@ -23,7 +24,7 @@ export const registerUser = async (
         .status(409)
         .json({ success: false, message: "User already exists" });
 
-    const user = await User.create({
+    await User.create({
       name,
       email,
       password,
@@ -151,6 +152,7 @@ export const refreshToken = async (req: Request, res: Response) => {
       });
     }
 
+    // session expiry
     if (session.expiresAt < new Date()) {
       await Session.deleteOne({ _id: session._id });
 
@@ -214,7 +216,16 @@ export const refreshToken = async (req: Request, res: Response) => {
 
 export const logoutUser = async (req: Request, res: Response) => {
   const token = req.cookies.refreshToken;
-  await Session.deleteOne({ refreshToken: token });
+
+  if (!token) {
+    return res.status(400).json({
+      success: false,
+      message: "No refresh token, no logout",
+    });
+  }
+
+  const hashedRefreshToken = hashToken(token);
+  await Session.deleteOne({ refreshTokenHash: hashedRefreshToken });
 
   res.clearCookie("accessToken");
   res.clearCookie("refreshToken");
